@@ -89,8 +89,9 @@ namespace Arkanoidek
             
             
             Ball ball = new Ball(Content, "ball", graphics.PreferredBackBufferWidth / 2,
-                graphics.PreferredBackBufferHeight, new Vector2(-1, -1),
+                graphics.PreferredBackBufferHeight/2, new Vector2(-1, -1),
                 null);
+            balls.Add(ball);
 
             // set initial health and score strings
             //healthString = GameConstants.HEALTH_PREFIX + paddle.Health.ToString();
@@ -124,7 +125,15 @@ namespace Arkanoidek
             KeyboardState keyboard = Keyboard.GetState();
 
             paddle.Update(gameTime, mouse, keyboard);
-
+            //foreach (Enemy enemy in enemys)
+            //{
+            //   // enemy.Update(gameTime);
+            //}
+            foreach (Ball ball in balls)
+            {
+                ball.Update(gameTime);
+            }
+            paddle.Draw(spriteBatch);
             base.Update(gameTime);
         }
 

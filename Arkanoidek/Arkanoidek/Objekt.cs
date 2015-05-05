@@ -142,7 +142,6 @@ namespace Arkanoidek
         /// <param name="spriteBatch">the sprite batch to use</param>
         public void Draw(SpriteBatch spriteBatch)
         {
-
             spriteBatch.Draw(sprite, drawRectangle, Color.White);
         }
 
