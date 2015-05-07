@@ -28,7 +28,7 @@ namespace Arkanoidek
         public void Update(GameTime gameTime, MouseState mouse, KeyboardState keyboard)
         {
             // paddle should only respond to input if it still has health
-            if (active == true)
+            if (Active == true)
             {
                 // move using mouse
                 //drawRectangle.X = mouse.X - drawRectangle.Width / 2;

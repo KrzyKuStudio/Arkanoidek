@@ -30,25 +30,60 @@
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.VideoImporters, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ball.png">
+    <Compile Include="image\ball.png">
       <Name>ball</Name>
     </Compile>
-    <Compile Include="bground.png">
+    <Compile Include="image\bground.png">
       <Name>bground</Name>
     </Compile>
-    <Compile Include="brick.png">
+    <Compile Include="image\brick.png">
       <Name>brick</Name>
     </Compile>
-    <Compile Include="cloud.png">
+    <Compile Include="image\cloud.png">
       <Name>cloud</Name>
     </Compile>
-    <Compile Include="paddle.png">
+    <Compile Include="image\paddle.png">
       <Name>paddle</Name>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Arial20.spritefont">
+    <Compile Include="fonts\Arial20.spritefont">
       <Name>Arial20</Name>
+      <Importer>FontDescriptionImporter</Importer>
+      <Processor>FontDescriptionProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="fonts\Arial100.spritefont">
+      <Name>Arial100</Name>
+      <Importer>FontDescriptionImporter</Importer>
+      <Processor>FontDescriptionProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="sounds\ballbounce.wav">
+      <Name>ballbounce</Name>
+      <Importer>WavImporter</Importer>
+      <Processor>SoundEffectProcessor</Processor>
+    </Compile>
+    <Compile Include="sounds\soundtheme.wav">
+      <Name>soundtheme</Name>
+      <Importer>WavImporter</Importer>
+      <Processor>SoundEffectProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="sounds\crowd.wav">
+      <Name>crowd</Name>
+      <Importer>WavImporter</Importer>
+      <Processor>SoundEffectProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="image\bgborder.png">
+      <Name>bgborder</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />

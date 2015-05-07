@@ -18,38 +18,47 @@ namespace Arkanoidek
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        SpriteBatch backgroundBatch;
+        
+        //Gamestate
+        public enum GameState
+        {
+            NewGame,
+            Playing,
+            GameOver,
+            StartGame
+        }
 
+        GameState gameState = GameState.StartGame;
         //Game objectr
         Paddle paddle;
         List<Ball> balls = new List<Ball>();
         List<Enemy> enemys = new List<Enemy>();
 
-        // textures
-        //static Texture2D paddleSprite;
-        //static Texture2D ballSprite;
-        //static Texture2D enemySprite;
+        static Vector2 enemysvelocity = new Vector2(1,0);
 
-        //background
+        SoundEffect ballBounceSound;
+        SoundEffect themeSound;
+        SoundEffect crowdSound;
+        SoundEffectInstance soundThemeInstance;
+
+        //background texture
         Texture2D background;
+        Texture2D backgroundborder;
         Rectangle mainFrame;
 
         // scoring support
         int score = 0;
         string scoreString = GameConstants.SCORE_PREFIX + 0;
 
-        // health support
-        string healthString = GameConstants.HEALTH_PREFIX +
-            GameConstants.PADDLE_INITIAL_HEALTH;
-
         // text display support
-        SpriteFont font;
+        SpriteFont font1;
+        SpriteFont gameoverfont;
 
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-
+            IsMouseVisible = true;
             // set resolution
             graphics.PreferredBackBufferWidth = GameConstants.WINDOW_WIDTH;
             graphics.PreferredBackBufferHeight = GameConstants.WINDOW_HEIGHT;
@@ -74,30 +83,26 @@ namespace Arkanoidek
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            spriteBatch = new SpriteBatch(graphics.GraphicsDevice);
 
             // load sprite font
-            //font = Content.Load<SpriteFont>("Arial20");
+            font1 = Content.Load<SpriteFont>("fonts\\Arial20");
+            gameoverfont = Content.Load<SpriteFont>("fonts\\Arial100");
 
-            background = Content.Load<Texture2D>("bground");
+            ballBounceSound = Content.Load<SoundEffect>("sounds\\ballbounce");
+            themeSound = Content.Load<SoundEffect>("sounds\\soundtheme");
+            crowdSound = Content.Load<SoundEffect>("sounds\\crowd");
+            soundThemeInstance = themeSound.CreateInstance();
+            soundThemeInstance.IsLooped = true;
+            soundThemeInstance.Volume = GameConstants.MUSIC_VOL;
+
+            background = Content.Load<Texture2D>("image\\bground");
+            backgroundborder = Content.Load<Texture2D>("image\\bgborder");
             mainFrame = new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-
-            //spawn objekts
-            paddle = new Paddle(Content, "paddle", graphics.PreferredBackBufferWidth / 2,
-                graphics.PreferredBackBufferHeight - graphics.PreferredBackBufferHeight / 19, new Vector2(0, 0),
-                null);
             
-            
-            Ball ball = new Ball(Content, "ball", graphics.PreferredBackBufferWidth / 2,
-                graphics.PreferredBackBufferHeight, new Vector2(-1, -1),
-                null);
 
-            // set initial health and score strings
-            //healthString = GameConstants.HEALTH_PREFIX + paddle.Health.ToString();
-            // scoreString = GameConstants.SCORE_PREFIX + score.ToString();
-
-
-        }
+         }
+    
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
@@ -105,7 +110,9 @@ namespace Arkanoidek
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
+            balls.Clear();
+            enemys.Clear();
+            
         }
 
         /// <summary>
@@ -122,9 +129,345 @@ namespace Arkanoidek
             // TODO: Add your update logic here
             MouseState mouse = Mouse.GetState();
             KeyboardState keyboard = Keyboard.GetState();
+            if(gameState == GameState.GameOver)
+            {
+                soundThemeInstance.Stop();
+                if (keyboard.IsKeyDown(Keys.Space))
+                {
+                    gameState = GameState.NewGame;
 
-            paddle.Update(gameTime, mouse, keyboard);
+                }
+            }
+            if (gameState == GameState.StartGame)
+            {
+                
+                if (keyboard.IsKeyDown(Keys.Space))
+                {
+                    gameState = GameState.NewGame;
 
+                }
+            }
+
+            // new game 
+            #region
+            if (gameState==GameState.NewGame)
+         {
+                //clear objects
+             balls.Clear();
+             enemys.Clear();
+                
+                //music theme
+             soundThemeInstance.Play();
+           
+                //spawn objekts
+
+            paddle = new Paddle(Content, "image\\paddle", graphics.PreferredBackBufferWidth / 2,
+                graphics.PreferredBackBufferHeight - graphics.PreferredBackBufferHeight / 25, new Vector2(0, 0),
+                null);
+            int ball1velx,ball1vely,ball2velx,ball2vely;
+
+            //randomize balls velocitys
+            #region
+
+            if (RandomNumberGenerator.Next(100)<50)
+            {
+                ball1velx = -2;
+            }
+            else
+            {
+                ball1velx = 2;
+            }
+            if (RandomNumberGenerator.Next(100) < 50)
+            {
+                ball1vely = -2;
+            }
+            else
+            {
+                ball1vely = 2;
+            }
+            if (RandomNumberGenerator.Next(100) < 50)
+            {
+                ball2velx = -1;
+            }
+            else
+            {
+                ball2velx = 1;
+            }
+            if (RandomNumberGenerator.Next(100) < 50)
+            {
+                ball2vely = -1;
+            }
+            else
+            {
+                ball2vely = 1;
+            }
+            #endregion
+
+            balls.Add(new Ball(Content, "image\\ball", graphics.PreferredBackBufferWidth / 3 + RandomNumberGenerator.Next(graphics.PreferredBackBufferHeight / 3),
+                graphics.PreferredBackBufferHeight / 2, new Vector2(ball1velx, ball1vely),
+                null));
+            balls.Add(new Ball(Content, "image\\ball", graphics.PreferredBackBufferWidth / 2,
+                graphics.PreferredBackBufferHeight /2, new Vector2(ball2velx, ball2vely),
+                null));
+
+            //add start bricks          
+            int row = 0;
+            for (int idx = 0; idx < (GameConstants.ROWS); ++idx)
+            {
+
+                for (int it = 0; it < (GameConstants.BRICKS / GameConstants.ROWS); ++it)
+                {
+                    enemys.Add(new Enemy(Content, "image\\brick", (int)(GameConstants.CLOUD_CORNER * graphics.PreferredBackBufferWidth) + it * (int)(GameConstants.CLOUD_CORNER * graphics.PreferredBackBufferWidth),
+                    25 + row * 60, enemysvelocity, null));
+                }
+                row++;
+
+            }
+            score = 0;
+            gameState = GameState.Playing;
+         }
+            #endregion
+            // set score strings
+            scoreString = GameConstants.SCORE_PREFIX + score.ToString();
+
+            if (gameState == GameState.Playing)
+            {
+                paddle.Update(gameTime, mouse, keyboard);
+                foreach (Ball ball in balls)
+                {
+                    ball.Update(gameTime);
+                }
+                foreach (Enemy enemy in enemys)
+                {
+                    enemy.Update(gameTime);
+                }
+
+
+
+                //Add new blok of bricks
+                if (enemys.Count > 0)
+                {
+                    if (enemys[(enemys.Count - 1)].DrawRectangle.Y > 80)
+                    {
+
+                        for (int it = 0; it < (GameConstants.BRICKS / GameConstants.ROWS); ++it)
+                        {
+                            enemys.Add(new Enemy(Content, "image\\brick", (int)(GameConstants.CLOUD_CORNER * graphics.PreferredBackBufferWidth) + it * (int)(GameConstants.CLOUD_CORNER * graphics.PreferredBackBufferWidth),
+                            25, enemys[(enemys.Count - 1)].Velocity, null));
+                        }
+
+                    }
+                }
+
+
+                // check bounce between balls
+                #region
+                {
+                    CollisionResolutionInfo var;
+                    int elapsedSpawnDelayMilliseconds = 0;
+                    elapsedSpawnDelayMilliseconds += gameTime.ElapsedGameTime.Milliseconds;
+                    for (int i = 0; i < balls.Count; i++)
+                    {
+                        for (int j = i + 1; j < balls.Count; j++)
+                        {
+                            if (balls[i].Active &&
+                                balls[j].Active)
+                            {
+
+                                var = CollisionUtils.CheckCollision(elapsedSpawnDelayMilliseconds,
+                                   GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT, balls[i].Velocity,
+                                   balls[i].DrawRectangle, balls[j].Velocity, balls[j].DrawRectangle);
+                                if (var != null)
+                                {
+                                    if (var.FirstOutOfBounds == true)
+                                    {
+                                        balls[i].Active = false;
+                                    }
+                                    else
+                                    {
+                                        balls[i].Velocity = var.FirstVelocity;
+                                        balls[i].DrawRectangle = var.FirstDrawRectangle;
+                                        ballBounceSound.Play(GameConstants.SFX_VOL - 0.1F, 1, 0);
+
+
+                                    }
+
+                                    if (var.SecondOutOfBounds == true)
+                                    {
+                                        balls[j].Active = false;
+                                    }
+                                    else
+                                    {
+                                        balls[j].Velocity = var.SecondVelocity;
+                                        balls[j].DrawRectangle = var.SecondDrawRectangle;
+                                    }
+
+                                }
+
+
+                            }
+                        }
+                    }
+
+                }
+                #endregion
+
+                //Bounce ball vs paddle
+                #region
+                //{
+                //    CollisionResolutionInfo var;
+                //    int elapsedSpawnDelayMilliseconds = 0;
+                //    elapsedSpawnDelayMilliseconds += gameTime.ElapsedGameTime.Milliseconds;
+                //    for (int i = 0; i < balls.Count; i++)
+                //    {
+                //        if (balls[i].Active &&
+                //                paddle.Active)
+                //        {
+
+                //            var = CollisionUtils.CheckCollision(elapsedSpawnDelayMilliseconds,
+                //               GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT, balls[i].Velocity,
+                //               balls[i].DrawRectangle, paddle.Velocity, paddle.DrawRectangle);
+                //            if (var != null)
+                //            {
+                //                if (var.FirstOutOfBounds == true)
+                //                {
+                //                    balls[i].Active = false;
+                //                }
+                //                else
+                //                {
+                //                    balls[i].Velocity = var.FirstVelocity;
+                //                    balls[i].DrawRectangle = var.FirstDrawRectangle;
+                //                }
+
+                //                if (var.SecondOutOfBounds == true)
+                //                {
+                //                    paddle.Active = false;
+                //                }
+                //                else
+                //                {
+                //                    paddle.Velocity = var.SecondVelocity;
+                //                    paddle.DrawRectangle = var.SecondDrawRectangle;
+                //                }
+
+                //            }
+
+                //        }
+                //    }
+                //}
+                for (int i = 0; i < balls.Count; i++)
+                {
+                    if (balls[i].CollisionRectangle.Intersects(paddle.CollisionRectangle) &&
+                        balls[i].DrawRectangle.Bottom <= paddle.DrawRectangle.Top + 2)
+                    {
+                        balls[i].Velocity *= new Vector2(1, -1);
+                        ballBounceSound.Play(GameConstants.SFX_VOL, 0, 0);
+                    }
+                }
+
+                #endregion
+
+                //Bounce balls with enemy
+                #region
+                {
+                    CollisionResolutionInfo var;
+                    int elapsedSpawnDelayMilliseconds = 0;
+                    elapsedSpawnDelayMilliseconds += gameTime.ElapsedGameTime.Milliseconds;
+                    for (int i = 0; i < balls.Count; i++)
+                    {
+                        for (int j = 0; j < enemys.Count; j++)
+                        {
+                            if (balls[i].Active &&
+                                enemys[j].Active)
+                            {
+
+                                var = CollisionUtils.CheckCollision(elapsedSpawnDelayMilliseconds,
+                                   GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT, balls[i].Velocity,
+                                   balls[i].DrawRectangle, enemys[j].Velocity, enemys[j].DrawRectangle);
+                                if (var != null)
+                                {
+                                    if (var.FirstOutOfBounds == true)
+                                    {
+                                        balls[i].Active = false;
+                                    }
+                                    else
+                                    {
+                                        balls[i].Velocity = var.FirstVelocity;
+                                        balls[i].DrawRectangle = var.FirstDrawRectangle;
+                                    }
+
+                                    if (var.SecondOutOfBounds == true)
+                                    {
+                                        enemys[j].Active = false;
+                                    }
+                                    else
+                                    {
+                                        enemys[j].Velocity = var.SecondVelocity;
+                                        enemys[j].DrawRectangle = var.SecondDrawRectangle;
+                                        enemys[j].Active = false;
+                                        ballBounceSound.Play(GameConstants.SFX_VOL - 0.1F, -1, 0);
+                                        score += 1;
+                                    }
+
+                                }
+
+
+                            }
+                        }
+                    }
+
+                }
+                #endregion
+
+                //Colision enemy and paddle
+                #region
+                foreach (Enemy enemy in enemys)
+                {
+                    if (paddle.CollisionRectangle.Intersects(enemy.CollisionRectangle))
+                    {
+                        gameState = GameState.GameOver;
+                    }
+
+                }
+                #endregion
+
+                //clen up balls and enemys
+                #region
+                foreach (Ball ball in balls)
+                {
+                    if (ball.DrawRectangle.Y > GameConstants.WINDOW_HEIGHT)
+                    {
+                        ball.Active = false;
+                    }
+                }
+                for (int i = balls.Count - 1; i >= 0; i--)
+                {
+                    if (!balls[i].Active)
+                    {
+                        balls.RemoveAt(i);
+                    }
+
+                }
+                for (int i = enemys.Count - 1; i >= 0; i--)
+                {
+                    if (!enemys[i].Active)
+                    {
+                        enemys.RemoveAt(i);
+                    }
+                }
+                foreach (Enemy enemy in enemys)
+                {
+                    if (enemy.DrawRectangle.Y > GameConstants.WINDOW_HEIGHT)
+                    {
+                        enemy.Active = false;
+                    }
+                }
+                if (gameState == GameState.Playing && balls.Count <= 0)
+                {
+                    gameState = GameState.GameOver;
+                    crowdSound.Play(GameConstants.SFX_VOL, 0, 0);
+                }
+                #endregion
+            }
             base.Update(gameTime);
         }
 
@@ -136,10 +479,11 @@ namespace Arkanoidek
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied);
             spriteBatch.Draw(background, mainFrame, Color.White);
+            spriteBatch.Draw(backgroundborder, mainFrame, Color.White);
 
-
+            
             foreach (Enemy enemy in enemys)
             {
                 enemy.Draw(spriteBatch);
@@ -148,11 +492,28 @@ namespace Arkanoidek
             {
                 ball.Draw(spriteBatch);
             }
-            paddle.Draw(spriteBatch);
+            if (gameState != GameState.StartGame)
+            {
+                paddle.Draw(spriteBatch);
+                // draw score
+                spriteBatch.DrawString(font1, scoreString, GameConstants.SCORE_LOCATION, Color.White);
+            }
+ 
+            
+            //gameover
+            if (gameState == GameState.GameOver)
+            {
+                spriteBatch.DrawString(gameoverfont, "GAME OVER", new Vector2(5,graphics.GraphicsDevice.Viewport.Height/3) , Color.White);
+                spriteBatch.DrawString(font1, "Press space for New Game", new Vector2(graphics.GraphicsDevice.Viewport.Width / 3.6F, graphics.GraphicsDevice.Viewport.Height / 1.7F), Color.White);
+            
+            }
+            //startgame
+            if (gameState == GameState.StartGame)
+            {
+                spriteBatch.DrawString(gameoverfont, "ANDROIDEK", new Vector2(5, graphics.GraphicsDevice.Viewport.Height / 3), Color.White);
+                spriteBatch.DrawString(font1, "Press space for New Game", new Vector2(graphics.GraphicsDevice.Viewport.Width / 3.6F, graphics.GraphicsDevice.Viewport.Height / 1.7F), Color.White);
 
-            // draw score and health
-            //spriteBatch.DrawString(font, healthString, GameConstants.HEALTH_LOCATION, Color.White);
-            //spriteBatch.DrawString(font, scoreString, GameConstants.SCORE_LOCATION, Color.White);
+            }
             spriteBatch.End();
 
             base.Draw(gameTime);

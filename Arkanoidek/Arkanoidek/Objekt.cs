@@ -13,7 +13,7 @@ namespace Arkanoidek
 {
     public class Objekt
     {
-          #region Fields
+        #region Fields
 
         // graphic and drawing info
         protected Texture2D sprite;
@@ -21,7 +21,7 @@ namespace Arkanoidek
         protected Vector2 velocity;
 
         // Stats
-        protected bool active;
+        bool active;
 
         // shooting support
         //none
@@ -48,6 +48,7 @@ namespace Arkanoidek
             LoadContent(contentManager, spriteName, x, y);
             this.shootSound = shootSound;
             this.active = true;
+            this.velocity = velocity;
         }
 
         #endregion
@@ -61,7 +62,29 @@ namespace Arkanoidek
         {
             get { return drawRectangle; }
         }
+        public bool Active
+        {
+            get { return active; }
+            set { active = value; }
+        }
 
+        /// <summary>
+        /// Gets and sets the velocity 
+        /// </summary>
+        public Vector2 Velocity
+        {
+            get { return velocity; }
+            set { velocity = value; }
+        }
+
+        /// <summary>
+        /// Gets and sets the draw rectangle 
+        /// </summary>
+        public Rectangle DrawRectangle
+        {
+            get { return drawRectangle; }
+            set { drawRectangle = value; }
+        }
         #endregion
 
         #region Private properties
@@ -69,7 +92,7 @@ namespace Arkanoidek
         /// <summary>
         /// Gets and sets the x location of the center of the burger
         /// </summary>
-        private int X
+        protected int X
         {
             get { return drawRectangle.Center.X; }
             set
@@ -91,7 +114,7 @@ namespace Arkanoidek
         /// <summary>
         /// Gets and sets the y location of the center of the burger
         /// </summary>
-        private int Y
+        protected int Y
         {
             get { return drawRectangle.Center.Y; }
             set
@@ -110,31 +133,27 @@ namespace Arkanoidek
             }
         }
 
-        protected void ClampInWindow()
-        {
-              // clamp objekt in window
-                if (drawRectangle.Left < 0)
-                {
-                    drawRectangle.X = 0;
-                }
-                else if (drawRectangle.Right > GameConstants.WINDOW_WIDTH)
-                {
-                    drawRectangle.X = GameConstants.WINDOW_WIDTH - drawRectangle.Width;
-                }
-                if (drawRectangle.Top < 0)
-                {
-                    drawRectangle.Y = 0;
-                }
-                else if (drawRectangle.Bottom > GameConstants.WINDOW_HEIGHT)
-                {
-                    drawRectangle.Y = GameConstants.WINDOW_HEIGHT - drawRectangle.Height;
-                }
 
-        }
         #endregion
 
         #region Public methods
+        /// <summary>
+        /// Updates the objektlocation location
+        /// </summary>
+        /// <param name="gameTime">game time</param>
 
+        public void Update(GameTime gameTime)
+        {
+            
+            if (Active == true)
+            {
+                drawRectangle.X += (int)velocity.X;
+                drawRectangle.Y += (int)velocity.Y;
+
+
+
+            }
+        }
  
         /// <summary>
         /// Draws the objekt
@@ -167,6 +186,27 @@ namespace Arkanoidek
                 sprite.Height);
         }
 
+        protected void ClampInWindow()
+        {
+            // clamp objekt in window
+            if (drawRectangle.Left < 0)
+            {
+                drawRectangle.X = 0;
+            }
+            else if (drawRectangle.Right > GameConstants.WINDOW_WIDTH)
+            {
+                drawRectangle.X = GameConstants.WINDOW_WIDTH - drawRectangle.Width;
+            }
+            if (drawRectangle.Top < 0)
+            {
+                drawRectangle.Y = 0;
+            }
+            else if (drawRectangle.Bottom > GameConstants.WINDOW_HEIGHT)
+            {
+                drawRectangle.Y = GameConstants.WINDOW_HEIGHT - drawRectangle.Height;
+            }
+
+        }
         #endregion
     }
 }
