@@ -44,7 +44,10 @@ namespace Arkanoidek
         //background texture
         Texture2D background;
         Texture2D backgroundborder;
+        Texture2D backgroundsky;
         Rectangle mainFrame;
+        int time = 1;
+
 
         // scoring support
         int score = 0;
@@ -98,6 +101,7 @@ namespace Arkanoidek
 
             background = Content.Load<Texture2D>("image\\bground");
             backgroundborder = Content.Load<Texture2D>("image\\bgborder");
+            backgroundsky = Content.Load<Texture2D>("image\\sky");
             mainFrame = new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
             
 
@@ -312,48 +316,9 @@ namespace Arkanoidek
                 }
                 #endregion
 
-                //Bounce ball vs paddle
-                #region
-                //{
-                //    CollisionResolutionInfo var;
-                //    int elapsedSpawnDelayMilliseconds = 0;
-                //    elapsedSpawnDelayMilliseconds += gameTime.ElapsedGameTime.Milliseconds;
-                //    for (int i = 0; i < balls.Count; i++)
-                //    {
-                //        if (balls[i].Active &&
-                //                paddle.Active)
-                //        {
 
-                //            var = CollisionUtils.CheckCollision(elapsedSpawnDelayMilliseconds,
-                //               GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT, balls[i].Velocity,
-                //               balls[i].DrawRectangle, paddle.Velocity, paddle.DrawRectangle);
-                //            if (var != null)
-                //            {
-                //                if (var.FirstOutOfBounds == true)
-                //                {
-                //                    balls[i].Active = false;
-                //                }
-                //                else
-                //                {
-                //                    balls[i].Velocity = var.FirstVelocity;
-                //                    balls[i].DrawRectangle = var.FirstDrawRectangle;
-                //                }
+                #region Bounce ball vs paddle
 
-                //                if (var.SecondOutOfBounds == true)
-                //                {
-                //                    paddle.Active = false;
-                //                }
-                //                else
-                //                {
-                //                    paddle.Velocity = var.SecondVelocity;
-                //                    paddle.DrawRectangle = var.SecondDrawRectangle;
-                //                }
-
-                //            }
-
-                //        }
-                //    }
-                //}
                 for (int i = 0; i < balls.Count; i++)
                 {
                     if (balls[i].CollisionRectangle.Intersects(paddle.CollisionRectangle) &&
@@ -482,8 +447,15 @@ namespace Arkanoidek
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied);
             spriteBatch.Draw(background, mainFrame, Color.White);
             spriteBatch.Draw(backgroundborder, mainFrame, Color.White);
+            spriteBatch.Draw(backgroundsky, new Rectangle(((time / 4) % GameConstants.WINDOW_WIDTH)-GameConstants.WINDOW_WIDTH,-100, GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_WIDTH), Color.White);
+            spriteBatch.Draw(backgroundsky, new Rectangle(((time / 4) % GameConstants.WINDOW_WIDTH), -100, GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_WIDTH), Color.White);
+            //        # animiate background
+            time += 1;
+           
+            //canvas.blit(debris_image, (((time / 4) % WIDTH)-WIDTH,50))
+            //canvas.blit(debris_image, (wtime,50))
 
-            
+
             foreach (Enemy enemy in enemys)
             {
                 enemy.Draw(spriteBatch);
